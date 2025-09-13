@@ -1,5 +1,5 @@
 import { TOWERS } from '../data/towers.js';
-import { getTotalWaves } from '../data/waves.js';
+import { getTotalWaves, ECON } from '../data/waves.js';
 import { getTowerTotalCost, getTowerSellValue, getTowerUpgradeCost, canAffordTower, canAffordUpgrade } from '../utils/towerCalculations.js';
 
 class UIScene extends Phaser.Scene {
@@ -10,6 +10,14 @@ class UIScene extends Phaser.Scene {
 
     create() {
         console.log('🎮 UIScene: Create method called - initializing UI');
+        console.log('🎮 UIScene: ECON config loaded:', {
+            startGold: ECON.startGold,
+            lives: ECON.lives,
+            waveBonus: ECON.waveBonus(1)
+        });
+
+        // Track selected tower type for highlighting
+        this.selectedTowerType = null;
 
         // Create UI groups
         this.uiGroup = this.add.group();
@@ -27,12 +35,14 @@ class UIScene extends Phaser.Scene {
         this.setupEventListeners();
 
         // Initial UI state
-        this.updateHUD({
-            gold: 150,
-            lives: 20,
+        const initialState = {
+            gold: ECON.startGold,
+            lives: ECON.lives,
             wave: 1,
             score: 0
-        });
+        };
+        console.log('🎮 UIScene: Setting initial UI state:', initialState);
+        this.updateHUD(initialState);
     }
 
     createHUD() {
@@ -42,12 +52,12 @@ class UIScene extends Phaser.Scene {
 
         // Gold display
         this.goldIcon = this.add.text(50, 20, '$', { font: '24px Arial', fill: '#ffff00' });
-        this.goldText = this.add.text(75, 25, '150', { font: '18px Arial', fill: '#ffff00' });
+        this.goldText = this.add.text(75, 25, ECON.startGold.toString(), { font: '18px Arial', fill: '#ffff00' });
         this.uiGroup.addMultiple([this.goldIcon, this.goldText]);
 
         // Lives display
         this.livesIcon = this.add.text(200, 20, '❤️', { font: '24px Arial' });
-        this.livesText = this.add.text(230, 25, '20', { font: '18px Arial', fill: '#ff0000' });
+        this.livesText = this.add.text(230, 25, ECON.lives.toString(), { font: '18px Arial', fill: '#ff0000' });
         this.uiGroup.addMultiple([this.livesIcon, this.livesText]);
 
         // Wave display
@@ -294,11 +304,21 @@ class UIScene extends Phaser.Scene {
         this.waveText.setText(`Wave: ${data.wave}/${getTotalWaves()}`);
         this.scoreText.setText(`Score: ${data.score}`);
 
-        // Update tower shop affordability
+        // Update tower shop affordability but preserve selected tower highlight
         Object.keys(this.towerButtons).forEach(towerType => {
             const towerData = TOWERS[towerType];
             const canAfford = data.gold >= towerData.cost;
-            this.towerButtons[towerType].text.setColor(canAfford ? '#ffffff' : '#666666');
+            const { button, text } = this.towerButtons[towerType];
+            
+            // Only update colors if this tower is not currently selected
+            if (towerType !== this.selectedTowerType) {
+                text.setColor(canAfford ? '#ffffff' : '#666666');
+                button.setFillStyle(canAfford ? 0x666666 : 0x333333);
+            } else {
+                // Keep selected tower highlighted
+                text.setColor('#ffffff');
+                button.setFillStyle(canAfford ? 0x00AA00 : 0xAA0000);
+            }
         });
     }
 
@@ -309,6 +329,9 @@ class UIScene extends Phaser.Scene {
 
     highlightSelectedTower(selectedTowerType) {
         console.log(`🎨 Highlighting selected tower: ${selectedTowerType}`);
+
+        // Store the selected tower type
+        this.selectedTowerType = selectedTowerType;
 
         // Reset all tower buttons to default state
         Object.keys(this.towerButtons).forEach(towerType => {
