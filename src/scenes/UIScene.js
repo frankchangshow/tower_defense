@@ -76,8 +76,8 @@ class UIScene extends Phaser.Scene {
         const buttonY = 25;
 
         // Pause/Resume button
-        this.pauseButton = this.add.rectangle(650, buttonY, 60, 30, 0xffa500);
-        this.pauseText = this.add.text(650, buttonY, 'Pause (P)', { font: '14px Arial', fill: '#ffffff' });
+        this.pauseButton = this.add.rectangle(650, buttonY, 100, 30, 0xffa500);
+        this.pauseText = this.add.text(650, buttonY, 'Pause (P)', { font: '11px Arial', fill: '#ffffff' });
         this.pauseText.setOrigin(0.5);
         this.pauseButton.setInteractive();
 

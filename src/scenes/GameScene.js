@@ -62,6 +62,9 @@ class GameScene extends Phaser.Scene {
             this.towerInteractionManager = new TowerInteractionManager(this);
             this.visualEffectsManager = new VisualEffectsManager(this);
 
+            // Sync Spawner's game speed with GameStateManager
+            this.spawner.setGameSpeed(this.gameStateManager.getGameSpeed());
+
             // Pass visual effects to managers that need them
             console.log('🎨 GameScene: Passing visual effects to managers...');
             console.log('🎨 VisualJuiceManager:', !!this.visualJuiceManager);
@@ -179,32 +182,20 @@ class GameScene extends Phaser.Scene {
     addVersionDisplay() {
         console.log('📱 Starting to add version display...');
         
-        // Add version display in top-left corner
-        const versionText = this.add.text(10, 10, 'v20241213l - Multi-Layer Glow Effect', {
-            font: '14px Arial',
+        // Add version display in bottom-right corner (away from all UI elements)
+        const versionText = this.add.text(950, 520, 'v20241213y - Fixed Blank Screen', {
+            font: '12px Arial',
             fill: '#00ff00',
             backgroundColor: '#000000',
-            padding: { x: 6, y: 3 },
+            padding: { x: 4, y: 2 },
             stroke: '#ffffff',
             strokeThickness: 1
         });
+        versionText.setOrigin(1, 0); // Right-aligned
         versionText.setDepth(1000); // Above everything
         
-        console.log('📱 Version text created:', versionText);
-        console.log('📱 Version text position:', versionText.x, versionText.y);
-        console.log('📱 Version text visible:', versionText.visible);
-        console.log('📱 Version text alpha:', versionText.alpha);
-        console.log('📱 Version display added: v20241213e - Debug Visual Effects');
-        
-        // Add a test text to make sure text rendering works
-        const testText = this.add.text(10, 40, 'TEST TEXT - CAN YOU SEE THIS?', {
-            font: '16px Arial',
-            fill: '#ff0000',
-            backgroundColor: '#ffffff',
-            padding: { x: 4, y: 2 }
-        });
-        testText.setDepth(1000);
-        console.log('📱 Test text added:', testText);
+        console.log('📱 Version display added:', versionText);
+        console.log('📱 Version display added: v20241213m - Fixed Game Over Restart');
     }
 
     setupEventListeners() {

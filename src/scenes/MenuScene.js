@@ -104,7 +104,7 @@ class MenuScene extends Phaser.Scene {
         });
 
         // Version info
-        this.add.text(10, 520, 'v20241213l - Multi-Layer Glow Effect', {
+        this.add.text(10, 520, 'v20241213y - Fixed Blank Screen', {
             font: '12px Arial',
             fill: '#666666'
         });

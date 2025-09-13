@@ -64,9 +64,9 @@ class GameOverScene extends Phaser.Scene {
         });
 
         // Restart button
-        this.restartButton = this.add.rectangle(480, yPos + 30, 150, 40, 0x4CAF50);
+        this.restartButton = this.add.rectangle(480, yPos + 30, 250, 40, 0x4CAF50);
         const restartText = this.add.text(480, yPos + 30, 'PLAY AGAIN (R/SPACE)', {
-            font: '16px Arial',
+            font: '12px Arial',
             fill: '#ffffff'
         });
         restartText.setOrigin(0.5);
@@ -101,9 +101,9 @@ class GameOverScene extends Phaser.Scene {
         });
 
         // Menu button
-        this.menuButton = this.add.rectangle(480, yPos + 80, 150, 40, 0x2196F3);
+        this.menuButton = this.add.rectangle(480, yPos + 80, 250, 40, 0x2196F3);
         const menuText = this.add.text(480, yPos + 80, 'MAIN MENU (M)', {
-            font: '16px Arial',
+            font: '12px Arial',
             fill: '#ffffff'
         });
         menuText.setOrigin(0.5);
@@ -125,55 +125,55 @@ class GameOverScene extends Phaser.Scene {
     }
 
     restartGame() {
-        console.log('🔄 [1/4] Restarting game...');
+        console.log('🔄 [1/3] Restarting game...');
 
         try {
-            // Simple approach: stop this scene and restart the game scenes
-            console.log('🔄 [2/4] Stopping GameOverScene...');
+            // Get reference to the scene manager
+            console.log('🔄 [2/3] Getting scene manager reference...');
+            const sceneManager = this.scene.manager;
             
-            // Stop this scene first
+            // Stop this scene first to remove overlay
+            console.log('🔄 [3/3] Stopping GameOverScene and restarting...');
             this.scene.stop();
             
-            // Start fresh game after a brief delay
-            this.time.delayedCall(200, () => {
-                console.log('🔄 [3/4] Starting fresh GameScene...');
-                try {
-                    this.scene.start('GameScene');
-                    this.scene.launch('UIScene');
-                    console.log('🔄 [4/4] Game restarted successfully');
-                } catch (error) {
-                    console.error('❌ Error restarting game:', error);
-                }
-            });
+            // Stop other scenes and restart immediately
+            sceneManager.stop('GameScene');
+            sceneManager.stop('UIScene');
+            
+            // Start scenes immediately - the stop/start should work without delay
+            sceneManager.start('GameScene');
+            sceneManager.start('UIScene');
+            
+            console.log('✅ Game restarted successfully');
             
         } catch (error) {
             console.error('❌ Error during restart:', error);
+            console.error('❌ Error stack:', error.stack);
         }
     }
 
     returnToMenu() {
-        console.log('🔄 Returning to menu...');
+        console.log('🔄 [1/3] Returning to menu...');
 
         try {
-            // Simple approach: stop this scene and go to menu
-            console.log('🔄 Stopping GameOverScene...');
+            // Get reference to the scene manager
+            console.log('🔄 [2/3] Getting scene manager reference...');
+            const sceneManager = this.scene.manager;
             
-            // Stop this scene first
+            // Stop this scene first to remove overlay
+            console.log('🔄 [3/3] Stopping GameOverScene and starting menu...');
             this.scene.stop();
             
-            // Start menu scene after a brief delay
-            this.time.delayedCall(200, () => {
-                console.log('🔄 Starting MenuScene...');
-                try {
-                    this.scene.start('MenuScene');
-                    console.log('✅ Returned to menu successfully');
-                } catch (error) {
-                    console.error('❌ Error returning to menu:', error);
-                }
-            });
+            // Stop other scenes and start menu immediately
+            sceneManager.stop('GameScene');
+            sceneManager.stop('UIScene');
+            sceneManager.start('MenuScene');
+            
+            console.log('✅ Returned to menu successfully');
             
         } catch (error) {
             console.error('❌ Error during return to menu:', error);
+            console.error('❌ Error stack:', error.stack);
         }
     }
 
