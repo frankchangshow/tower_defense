@@ -1,3 +1,7 @@
+// Import scene classes for restart
+import GameScene from './GameScene.js';
+import UIScene from './UIScene.js';
+
 class GameOverScene extends Phaser.Scene {
     constructor() {
         super({ key: 'GameOverScene' });
@@ -37,6 +41,20 @@ class GameOverScene extends Phaser.Scene {
             strokeThickness: 4
         });
         titleText.setOrigin(0.5);
+
+        // Play appropriate sound based on win/lose
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            if (isWin) {
+                // Play victory sound
+                this.playVictorySound(audioContext);
+            } else {
+                // Play game over sound
+                this.playGameOverSound(audioContext);
+            }
+        } catch (error) {
+            console.warn('🔊 Could not play game over/victory sound:', error);
+        }
 
         // Results
         let yPos = 220;
@@ -90,34 +108,9 @@ class GameOverScene extends Phaser.Scene {
             this.restartGame();
         });
 
-        this.input.keyboard.on('keydown-M', () => {
-            console.log('🔄 M key pressed - returning to menu');
-            this.returnToMenu();
-        });
-
         this.input.keyboard.on('keydown-SPACE', () => {
             console.log('🔄 SPACE key pressed - restarting game');
             this.restartGame();
-        });
-
-        // Menu button
-        this.menuButton = this.add.rectangle(480, yPos + 80, 250, 40, 0x2196F3);
-        const menuText = this.add.text(480, yPos + 80, 'MAIN MENU (M)', {
-            font: '12px Arial',
-            fill: '#ffffff'
-        });
-        menuText.setOrigin(0.5);
-
-        this.menuButton.setInteractive();
-        this.menuButton.on('pointerover', () => {
-            this.menuButton.setFillStyle(0x42A5F5);
-        });
-        this.menuButton.on('pointerout', () => {
-            this.menuButton.setFillStyle(0x2196F3); // FIXED: was menuButton, now this.menuButton
-        });
-        this.menuButton.on('pointerdown', () => {
-            console.log('🔄 Menu button clicked');
-            this.returnToMenu();
         });
 
         console.log('🎮 GameOverScene: Setup complete - screen should be visible now!');
@@ -125,55 +118,111 @@ class GameOverScene extends Phaser.Scene {
     }
 
     restartGame() {
-        console.log('🔄 [1/3] Restarting game...');
+        console.log('🔄 [FUNCTION: restartGame] Restarting game...');
+        console.log('🔄 [FUNCTION: restartGame] Current scene key:', this.scene.key);
+        console.log('🔄 [FUNCTION: restartGame] Scene manager exists:', !!this.scene.manager);
 
         try {
-            // Get reference to the scene manager
-            console.log('🔄 [2/3] Getting scene manager reference...');
-            const sceneManager = this.scene.manager;
+            // Nuclear option: reload the entire page to avoid all destroy errors
+            console.log('🔄 [FUNCTION: restartGame] Using page reload approach...');
             
-            // Stop this scene first to remove overlay
-            console.log('🔄 [3/3] Stopping GameOverScene and restarting...');
-            this.scene.stop();
+            // Reload the page to get a completely fresh start
+            window.location.reload();
             
-            // Stop other scenes and restart immediately
-            sceneManager.stop('GameScene');
-            sceneManager.stop('UIScene');
-            
-            // Start scenes immediately - the stop/start should work without delay
-            sceneManager.start('GameScene');
-            sceneManager.start('UIScene');
-            
-            console.log('✅ Game restarted successfully');
+            console.log('✅ [FUNCTION: restartGame] Page reload initiated');
             
         } catch (error) {
-            console.error('❌ Error during restart:', error);
-            console.error('❌ Error stack:', error.stack);
+            console.error('❌ [FUNCTION: restartGame] Error during restart:', error);
         }
     }
 
-    returnToMenu() {
-        console.log('🔄 [1/3] Returning to menu...');
-
+    cleanupSceneObjects() {
         try {
-            // Get reference to the scene manager
-            console.log('🔄 [2/3] Getting scene manager reference...');
-            const sceneManager = this.scene.manager;
+            console.log('🧹 Cleaning up GameOverScene objects...');
             
-            // Stop this scene first to remove overlay
-            console.log('🔄 [3/3] Stopping GameOverScene and starting menu...');
-            this.scene.stop();
+            // Remove all children from the scene
+            if (this.children) {
+                this.children.list.forEach(child => {
+                    try {
+                        if (child && typeof child.destroy === 'function') {
+                            child.destroy();
+                        }
+                    } catch (error) {
+                        console.warn('🧹 Error destroying child:', error.message);
+                    }
+                });
+                this.children.removeAll();
+            }
             
-            // Stop other scenes and start menu immediately
-            sceneManager.stop('GameScene');
-            sceneManager.stop('UIScene');
-            sceneManager.start('MenuScene');
+            // Clean up specific objects
+            if (this.restartButton) {
+                this.restartButton.destroy();
+                this.restartButton = null;
+            }
+            if (this.menuButton) {
+                this.menuButton.destroy();
+                this.menuButton = null;
+            }
+            if (this.restartText) {
+                this.restartText.destroy();
+                this.restartText = null;
+            }
+            if (this.menuText) {
+                this.menuText.destroy();
+                this.menuText = null;
+            }
             
-            console.log('✅ Returned to menu successfully');
-            
+            console.log('🧹 GameOverScene objects cleaned up');
         } catch (error) {
-            console.error('❌ Error during return to menu:', error);
-            console.error('❌ Error stack:', error.stack);
+            console.warn('🧹 Error during cleanup:', error.message);
+        }
+    }
+
+    playVictorySound(audioContext) {
+        try {
+            const bufferSize = audioContext.sampleRate * 1.5; // 1.5 seconds
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            for (let i = 0; i < bufferSize; i++) {
+                const t = i / audioContext.sampleRate;
+                // Triumphant ascending melody
+                const frequency = 200 + (t * 300); // Rising from 200Hz to 500Hz
+                data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 0.8) * 0.4;
+            }
+            
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            source.start();
+            
+            console.log('🔊 Victory sound played');
+        } catch (error) {
+            console.warn('🔊 Could not play victory sound:', error);
+        }
+    }
+
+    playGameOverSound(audioContext) {
+        try {
+            const bufferSize = audioContext.sampleRate * 1.0; // 1.0 seconds
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            for (let i = 0; i < bufferSize; i++) {
+                const t = i / audioContext.sampleRate;
+                // Sad descending tone
+                const frequency = 300 - (t * 200); // Falling from 300Hz to 100Hz
+                data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 1) * 0.5;
+            }
+            
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            source.start();
+            
+            console.log('🔊 Game over sound played');
+        } catch (error) {
+            console.warn('🔊 Could not play game over sound:', error);
         }
     }
 

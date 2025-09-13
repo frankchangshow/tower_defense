@@ -1,4 +1,4 @@
-import { WAVES, ECON } from '../data/waves.js';
+import { WAVES, ECON, DEBUG, getTotalWaves, getWaveInfo } from '../data/waves.js';
 import { ENEMIES, getScaledHP } from '../data/enemies.js';
 import Enemy from '../objects/Enemy.js';
 
@@ -10,20 +10,25 @@ class Spawner {
         this.activeSpawns = [];
         this.isSpawning = false;
         this.gameSpeed = 1;
+        this.audioManager = null;
+    }
+
+    setAudioManager(audioManager) {
+        this.audioManager = audioManager;
     }
 
     startWave(waveNumber) {
-        console.log(`🎲 Spawner: startWave(${waveNumber}) called. Total waves: ${WAVES.length}`);
+        console.log(`🎲 Spawner: startWave(${waveNumber}) called. Total waves: ${getTotalWaves()}, DEBUG.maxWaves: ${DEBUG.maxWaves}`);
 
-        if (waveNumber > WAVES.length) {
+        if (waveNumber > getTotalWaves()) {
             // Game won!
             console.log('🎉 Spawner: VICTORY! All waves completed!');
-            console.log(`🎉 Wave ${waveNumber} > ${WAVES.length} - triggering win condition`);
+            console.log(`🎉 Wave ${waveNumber} > ${getTotalWaves()} - triggering win condition`);
             this.scene.events.emit('gameWon');
             return;
         }
 
-        const waveData = WAVES[waveNumber - 1];
+        const waveData = getWaveInfo(waveNumber);
         if (!waveData) {
             // console.log('Spawner: No wave data found');
             return;
@@ -32,6 +37,11 @@ class Spawner {
         this.isSpawning = true;
         this.currentWave = waveNumber;
         this.spawnIndex = 0;
+
+        // Play wave start sound
+        if (this.audioManager) {
+            this.audioManager.playSound('waveStart');
+        }
 
         // console.log(`Spawner: Starting wave ${waveNumber} with ${waveData.entries.length} entries`);
 
@@ -119,6 +129,11 @@ class Spawner {
             this.activeSpawns.splice(index, 1);
         }
 
+        // Play enemy death sound
+        if (this.audioManager) {
+            this.audioManager.playSound('enemyDeath');
+        }
+
         // Reward gold
         this.economy.onEnemyDefeated(enemy.type, enemy.enemyData);
 
@@ -145,8 +160,9 @@ class Spawner {
         if (this.isSpawning && this.activeSpawns.length === 0) {
             this.isSpawning = false;
 
-            // Start next wave after inter-wave delay
-            this.scene.time.delayedCall(ECON.interWaveTime / this.gameSpeed, () => {
+            // Start next wave after inter-wave delay (or instantly in debug mode)
+            const delay = DEBUG.enabled && DEBUG.instantWaves ? 0 : ECON.interWaveTime / this.gameSpeed;
+            this.scene.time.delayedCall(delay, () => {
                 this.economy.advanceWave();
                 this.startWave(this.currentWave + 1);
             });

@@ -30,19 +30,22 @@ class TowerPlacementManager {
         this.visualJuiceManager = null;
         this.particleManager = null;
         this.screenShakeManager = null;
+        this.audioManager = null;
     }
 
-    setVisualEffects(visualJuiceManager, particleManager, screenShakeManager) {
-        console.log('🎨 TowerPlacementManager: Setting visual effects managers...');
+    setVisualEffects(visualJuiceManager, particleManager, screenShakeManager, audioManager) {
+        console.log('🎨 TowerPlacementManager: Setting visual effects and audio managers...');
         console.log('🎨 VisualJuiceManager:', !!visualJuiceManager);
         console.log('🎨 ParticleManager:', !!particleManager);
         console.log('🎨 ScreenShakeManager:', !!screenShakeManager);
+        console.log('🔊 AudioManager:', !!audioManager);
         
         this.visualJuiceManager = visualJuiceManager;
         this.particleManager = particleManager;
         this.screenShakeManager = screenShakeManager;
+        this.audioManager = audioManager;
         
-        console.log('🎨 TowerPlacementManager: Visual effects managers set successfully');
+        console.log('🎨 TowerPlacementManager: Visual effects and audio managers set successfully');
     }
 
     startTowerPlacement(towerType) {
@@ -156,6 +159,14 @@ class TowerPlacementManager {
                 this.screenShakeManager.lightShake();
             } else {
                 console.log('❌ ScreenShakeManager not available for tower placement');
+            }
+            
+            // Add audio effect for tower placement
+            if (this.audioManager) {
+                console.log('🔊 Playing tower placement sound...');
+                this.audioManager.playSound('towerPlace');
+            } else {
+                console.log('❌ AudioManager not available for tower placement');
             }
 
             // Clean up placement

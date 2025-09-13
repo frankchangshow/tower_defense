@@ -1,10 +1,12 @@
 // Tower Defense Game - Main Entry Point
-import BootScene from './src/scenes/BootScene.js?v=20241212';
-import PreloadScene from './src/scenes/PreloadScene.js?v=20241212';
-import MenuScene from './src/scenes/MenuScene.js?v=20241212';
-import GameScene from './src/scenes/GameScene.js?v=20241212';
-import UIScene from './src/scenes/UIScene.js?v=20241212';
-import GameOverScene from './src/scenes/GameOverScene.js?v=20241212';
+import { getVersionedUrl } from './src/config/version.js';
+
+import BootScene from './src/scenes/BootScene.js?v=20241213iii';
+import PreloadScene from './src/scenes/PreloadScene.js?v=20241213iii';
+import MenuScene from './src/scenes/MenuScene.js?v=20241213iii';
+import GameScene from './src/scenes/GameScene.js?v=20241213iii';
+import UIScene from './src/scenes/UIScene.js?v=20241213iii';
+import GameOverScene from './src/scenes/GameOverScene.js?v=20241213iii';
 
 // Game Configuration
 const config = {

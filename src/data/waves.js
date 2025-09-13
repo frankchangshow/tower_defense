@@ -86,14 +86,26 @@ export const ECON = {
   skipWaveBonus: 5 // extra gold for skipping inter-wave time
 };
 
+// Debug configuration
+export const DEBUG = {
+  enabled: true, // Set to false for production
+  maxWaves: 1, // Set to 1 for quick testing, or WAVES.length for full game
+  showDebugPanel: true,
+  instantWaves: false, // Skip inter-wave delays
+  infiniteGold: false // Give unlimited gold
+};
+
 // Wave management helpers
-export const getTotalWaves = () => WAVES.length;
+export const getTotalWaves = () => DEBUG.enabled ? DEBUG.maxWaves : WAVES.length;
 
 export const getWaveInfo = (waveNumber) => {
-  if (waveNumber < 1 || waveNumber > WAVES.length) {
+  const maxWaves = getTotalWaves();
+  if (waveNumber < 1 || waveNumber > maxWaves) {
     return null;
   }
-  return WAVES[waveNumber - 1];
+  // If debug mode limits waves, cycle through available waves
+  const actualWaveIndex = ((waveNumber - 1) % WAVES.length);
+  return WAVES[actualWaveIndex];
 };
 
 export const calculateWaveBonus = (waveNumber) => {

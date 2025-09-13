@@ -18,6 +18,13 @@ import ParticleManager from '../effects/ParticleManager.js';
 import VisualJuiceManager from '../effects/VisualJuiceManager.js';
 import ProjectileTrailManager from '../effects/ProjectileTrailManager.js';
 
+// Import audio
+import AudioManager from '../audio/AudioManager.js';
+
+// Import debug configuration
+import { DEBUG } from '../data/waves.js';
+import { getVersionText } from '../config/version.js';
+
 class GameScene extends Phaser.Scene {
     constructor() {
         console.log('🎮 [GS-CONSTRUCT-1] GameScene: Constructor starting...');
@@ -32,6 +39,9 @@ class GameScene extends Phaser.Scene {
 
     create() {
         console.log('🎮 [GS-CREATE-1] GameScene: Create method called - initializing game');
+
+        // Reset flag for new game
+        this.gameOverSceneLaunched = false;
 
         // Check if Phaser objects are available
         if (!this.scene || !this.physics || !this.add) {
@@ -55,6 +65,9 @@ class GameScene extends Phaser.Scene {
             this.visualJuiceManager = new VisualJuiceManager(this);
             this.projectileTrailManager = new ProjectileTrailManager(this);
 
+            // Initialize audio
+            this.audioManager = new AudioManager(this);
+
             // Initialize managers with visual effects access
             this.inputManager = new InputManager(this);
             this.towerPlacementManager = new TowerPlacementManager(this);
@@ -65,11 +78,18 @@ class GameScene extends Phaser.Scene {
             // Sync Spawner's game speed with GameStateManager
             this.spawner.setGameSpeed(this.gameStateManager.getGameSpeed());
 
-            // Pass visual effects to managers that need them
-            console.log('🎨 GameScene: Passing visual effects to managers...');
+            // Initialize audio system
+            this.audioManager.initialize();
+            
+            // Pass audio manager to Spawner
+            this.spawner.setAudioManager(this.audioManager);
+
+            // Pass visual effects and audio to managers that need them
+            console.log('🎨 GameScene: Passing visual effects and audio to managers...');
             console.log('🎨 VisualJuiceManager:', !!this.visualJuiceManager);
             console.log('🎨 ParticleManager:', !!this.particleManager);
             console.log('🎨 ScreenShakeManager:', !!this.screenShakeManager);
+            console.log('🔊 AudioManager:', !!this.audioManager);
 
             // Test visual effects managers immediately
             console.log('🧪 Testing visual effects managers...');
@@ -82,8 +102,8 @@ class GameScene extends Phaser.Scene {
                 this.particleManager.createExplosion(400, 300, 0xff0000, 3);
             }
 
-            this.towerPlacementManager.setVisualEffects(this.visualJuiceManager, this.particleManager, this.screenShakeManager);
-            this.towerInteractionManager.setVisualEffects(this.visualJuiceManager, this.particleManager, this.screenShakeManager);
+            this.towerPlacementManager.setVisualEffects(this.visualJuiceManager, this.particleManager, this.screenShakeManager, this.audioManager);
+            this.towerInteractionManager.setVisualEffects(this.visualJuiceManager, this.particleManager, this.screenShakeManager, this.audioManager);
             
             console.log('🎨 GameScene: Visual effects passed to managers successfully');
 
@@ -121,6 +141,11 @@ class GameScene extends Phaser.Scene {
 
             // Add version display
             this.addVersionDisplay();
+
+            // Add debug panel if enabled
+            if (DEBUG.enabled && DEBUG.showDebugPanel) {
+                this.createDebugPanel();
+            }
 
             // Set up collisions
             this.physics.add.overlap(this.projectiles, this.spawner.getEnemies(), this.onProjectileHit, null, this);
@@ -183,7 +208,7 @@ class GameScene extends Phaser.Scene {
         console.log('📱 Starting to add version display...');
         
         // Add version display in bottom-right corner (away from all UI elements)
-        const versionText = this.add.text(950, 520, 'v20241213y - Fixed Blank Screen', {
+        const versionText = this.add.text(950, 520, getVersionText(), {
             font: '12px Arial',
             fill: '#00ff00',
             backgroundColor: '#000000',
@@ -195,10 +220,90 @@ class GameScene extends Phaser.Scene {
         versionText.setDepth(1000); // Above everything
         
         console.log('📱 Version display added:', versionText);
-        console.log('📱 Version display added: v20241213m - Fixed Game Over Restart');
+        console.log('📱 Version display added:', getVersionText());
+    }
+
+    createDebugPanel() {
+        console.log('🐛 Creating debug panel...');
+        
+        // Debug panel background
+        const debugBg = this.add.rectangle(10, 10, 200, 120, 0x000000, 0.7);
+        debugBg.setOrigin(0, 0);
+        debugBg.setDepth(1000);
+        
+        // Debug title
+        const debugTitle = this.add.text(15, 15, 'DEBUG PANEL', {
+            font: '12px Arial',
+            fill: '#00ff00'
+        });
+        debugTitle.setDepth(1001);
+        
+        // Wave count control
+        const waveLabel = this.add.text(15, 35, 'Max Waves:', {
+            font: '10px Arial',
+            fill: '#ffffff'
+        });
+        waveLabel.setDepth(1001);
+        
+        const waveText = this.add.text(15, 50, `Waves: ${DEBUG.maxWaves}`, {
+            font: '10px Arial',
+            fill: '#ffff00'
+        });
+        waveText.setDepth(1001);
+        
+        // Wave count buttons
+        const waveMinus = this.add.text(15, 65, '[ - ]', {
+            font: '10px Arial',
+            fill: '#ff0000'
+        });
+        waveMinus.setDepth(1001);
+        waveMinus.setInteractive();
+        waveMinus.on('pointerdown', () => {
+            DEBUG.maxWaves = Math.max(1, DEBUG.maxWaves - 1);
+            waveText.setText(`Waves: ${DEBUG.maxWaves}`);
+        });
+        
+        const wavePlus = this.add.text(60, 65, '[ + ]', {
+            font: '10px Arial',
+            fill: '#00ff00'
+        });
+        wavePlus.setDepth(1001);
+        wavePlus.setInteractive();
+        wavePlus.on('pointerdown', () => {
+            DEBUG.maxWaves = Math.min(10, DEBUG.maxWaves + 1);
+            waveText.setText(`Waves: ${DEBUG.maxWaves}`);
+        });
+        
+        // Instant waves toggle
+        const instantLabel = this.add.text(15, 85, 'Instant Waves:', {
+            font: '10px Arial',
+            fill: '#ffffff'
+        });
+        instantLabel.setDepth(1001);
+        
+        const instantToggle = this.add.text(15, 100, DEBUG.instantWaves ? '[ON]' : '[OFF]', {
+            font: '10px Arial',
+            fill: DEBUG.instantWaves ? '#00ff00' : '#ff0000'
+        });
+        instantToggle.setDepth(1001);
+        instantToggle.setInteractive();
+        instantToggle.on('pointerdown', () => {
+            DEBUG.instantWaves = !DEBUG.instantWaves;
+            instantToggle.setText(DEBUG.instantWaves ? '[ON]' : '[OFF]');
+            instantToggle.setFillStyle(DEBUG.instantWaves ? '#00ff00' : '#ff0000');
+        });
+        
+        console.log('🐛 Debug panel created');
     }
 
     setupEventListeners() {
+        // Resume audio context on first user interaction
+        this.input.on('pointerdown', () => {
+            if (this.audioManager) {
+                this.audioManager.resumeAudioContext();
+            }
+        });
+
         // Listen for UI events
         this.events.on('placeTower', (towerType) => {
             console.log(`🎯 Tower type selected: ${towerType}`);
@@ -257,6 +362,15 @@ class GameScene extends Phaser.Scene {
         this.events.on('gameWon', () => {
             console.log('🎉 GameScene: gameWon event received!');
             console.log('🎉 GameScene: Using overlay approach to avoid destroy errors');
+
+            // Check if we already launched GameOverScene to prevent duplicates
+            if (this.gameOverSceneLaunched) {
+                console.log('🎉 GameScene: GameOverScene already launched - ignoring duplicate gameWon event');
+                return;
+            }
+
+            // Set flag to prevent duplicates
+            this.gameOverSceneLaunched = true;
 
             // Simple approach: pause current scenes and launch GameOverScene as overlay
             this.scene.pause();

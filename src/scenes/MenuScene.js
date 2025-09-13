@@ -1,3 +1,5 @@
+import { getVersionText } from '../config/version.js';
+
 class MenuScene extends Phaser.Scene {
     constructor() {
         super({ key: 'MenuScene' });
@@ -104,7 +106,7 @@ class MenuScene extends Phaser.Scene {
         });
 
         // Version info
-        this.add.text(10, 520, 'v20241213y - Fixed Blank Screen', {
+        this.add.text(10, 520, getVersionText(), {
             font: '12px Arial',
             fill: '#666666'
         });

@@ -16,12 +16,14 @@ class TowerInteractionManager {
         this.visualJuiceManager = null;
         this.particleManager = null;
         this.screenShakeManager = null;
+        this.audioManager = null;
     }
 
-    setVisualEffects(visualJuiceManager, particleManager, screenShakeManager) {
+    setVisualEffects(visualJuiceManager, particleManager, screenShakeManager, audioManager) {
         this.visualJuiceManager = visualJuiceManager;
         this.particleManager = particleManager;
         this.screenShakeManager = screenShakeManager;
+        this.audioManager = audioManager;
     }
 
     selectTower(tower) {
@@ -101,6 +103,11 @@ class TowerInteractionManager {
         if (this.particleManager) {
             this.particleManager.createExplosion(tower.x, tower.y, 0xffff00, 6);
         }
+        
+        // Add audio effect for tower upgrade
+        if (this.audioManager) {
+            this.audioManager.playSound('towerUpgrade');
+        }
 
         this.gameScene.showKeyboardHelp(`Tower upgraded to level ${tower.level}!`);
         this.scene.events.emit('economyUpdate', {
@@ -132,6 +139,11 @@ class TowerInteractionManager {
         }
         if (this.screenShakeManager) {
             this.screenShakeManager.lightShake();
+        }
+        
+        // Add audio effect for tower selling
+        if (this.audioManager) {
+            this.audioManager.playSound('enemyDeath'); // Reuse enemy death sound for selling
         }
 
         // Remove tower from grid
