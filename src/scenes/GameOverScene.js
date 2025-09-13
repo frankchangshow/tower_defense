@@ -125,31 +125,75 @@ class GameOverScene extends Phaser.Scene {
     }
 
     restartGame() {
-        console.log('🔄 Restarting game...');
+        console.log('🔄 [1/6] Restarting game...');
 
         // First stop the current game scenes to avoid conflicts
+        console.log('🔄 [2/6] Stopping old scenes...');
         try {
+            // Check what scenes are currently active
+            const activeScenes = this.scene.manager.getScenes(true).map(s => s.scene.key);
+            const allScenes = this.scene.manager.getScenes(false).map(s => s.scene.key);
+            console.log('🔄 [2a/6] Active scenes:', activeScenes);
+            console.log('🔄 [2b/6] All scenes:', allScenes);
+
             // Stop GameScene if it exists
             if (this.scene.get('GameScene')) {
+                console.log('🔄 [2c/6] GameScene found, stopping...');
                 this.scene.stop('GameScene');
+                console.log('🔄 [2d/6] GameScene stopped successfully');
+            } else {
+                console.log('🔄 [2c/6] GameScene not found, skipping');
             }
+
             // Stop UIScene if it exists
             if (this.scene.get('UIScene')) {
+                console.log('🔄 [2e/6] UIScene found, stopping...');
                 this.scene.stop('UIScene');
+                console.log('🔄 [2f/6] UIScene stopped successfully');
+            } else {
+                console.log('🔄 [2e/6] UIScene not found, skipping');
             }
         } catch (error) {
-            console.warn('⚠️ Error stopping scenes:', error.message);
+            console.error('❌ [2x/6] Error stopping scenes:', error);
+            console.error('❌ [2x/6] Stack trace:', error.stack);
+            return; // Don't continue if stopping scenes fails
         }
+
+        console.log('🔄 [3/6] Old scenes stopped, waiting before starting new ones...');
 
         // Start fresh scenes after a brief delay
         this.time.delayedCall(100, () => {
-            this.scene.start('GameScene');
-            this.scene.launch('UIScene');
+            console.log('🔄 [4/6] Starting fresh GameScene...');
+            try {
+                this.scene.start('GameScene');
+                console.log('🔄 [4a/6] GameScene started successfully');
+            } catch (error) {
+                console.error('❌ [4x/6] Error starting GameScene:', error);
+                console.error('❌ [4x/6] Stack trace:', error.stack);
+                return;
+            }
+
+            console.log('🔄 [5/6] Launching fresh UIScene...');
+            try {
+                this.scene.launch('UIScene');
+                console.log('🔄 [5a/6] UIScene launched successfully');
+            } catch (error) {
+                console.error('❌ [5x/6] Error launching UIScene:', error);
+                console.error('❌ [5x/6] Stack trace:', error.stack);
+                return;
+            }
+
+            console.log('🔄 [6/6] New scenes running, stopping GameOverScene...');
 
             // Stop this scene after the new scenes are running
             this.time.delayedCall(200, () => {
-                this.scene.stop();
-                console.log('✅ Game restarted successfully');
+                try {
+                    this.scene.stop();
+                    console.log('✅ Game restarted successfully');
+                } catch (error) {
+                    console.error('❌ [6x/6] Error stopping GameOverScene:', error);
+                    console.error('❌ [6x/6] Stack trace:', error.stack);
+                }
             });
         });
     }

@@ -80,7 +80,7 @@ export const WAVES = [
 // Economy configuration
 export const ECON = {
   startGold: 150,
-  lives: 20,
+  lives: 10,
   waveBonus: (wave) => 10 + 2 * wave,
   interWaveTime: 8000, // milliseconds
   skipWaveBonus: 5 // extra gold for skipping inter-wave time

@@ -7,18 +7,18 @@ import { getTowerTotalCost, getTowerSellValue, canAffordTower } from '../utils/t
 
 class GameScene extends Phaser.Scene {
     constructor() {
-        console.log('🎮 GameScene: Constructor starting...');
+        console.log('🎮 [GS-CONSTRUCT-1] GameScene: Constructor starting...');
         try {
             super({ key: 'GameScene' });
-            console.log('🎮 GameScene: Constructor called successfully');
+            console.log('🎮 [GS-CONSTRUCT-2] GameScene: Constructor called successfully');
         } catch (error) {
-            console.error('❌ GameScene: Constructor failed:', error);
+            console.error('❌ [GS-CONSTRUCT-X] GameScene: Constructor failed:', error);
             throw error; // Re-throw to prevent scene creation
         }
     }
 
     create() {
-        console.log('🎮 GameScene: Create method called - initializing game');
+        console.log('🎮 [GS-CREATE-1] GameScene: Create method called - initializing game');
 
         // Check if Phaser objects are available
         if (!this.scene || !this.physics || !this.add) {
@@ -131,10 +131,10 @@ class GameScene extends Phaser.Scene {
             this.physics.add.overlap(this.projectiles, this.spawner.getEnemies(), this.onProjectileHit, null, this);
             console.log('🎮 GameScene: Physics collisions set up successfully');
 
-            console.log('🎮 GameScene: Create method completed successfully!');
+            console.log('🎮 [GS-CREATE-5] GameScene: Create method completed successfully!');
         } catch (error) {
-            console.error('❌ GameScene: Fatal error during create method:', error);
-            console.error('Stack trace:', error.stack);
+            console.error('❌ [GS-CREATE-X] GameScene: Fatal error during create method:', error);
+            console.error('❌ [GS-CREATE-X] Stack trace:', error.stack);
             // Don't return here - let Phaser handle the error
         }
     }
@@ -1185,11 +1185,20 @@ class GameScene extends Phaser.Scene {
     }
 
     shutdown() {
-        console.log('🧹 GameScene shutdown - skipping cleanup to prevent destroy errors');
+        console.log('🧹 [GS1/3] GameScene shutdown starting...');
+
+        // Log scene state before shutdown
+        try {
+            const activeScenes = this.scene.manager.getScenes(true).map(s => s.scene.key);
+            const allScenes = this.scene.manager.getScenes(false).map(s => s.scene.key);
+            console.log('🧹 [GS2/3] Active scenes during shutdown:', activeScenes);
+            console.log('🧹 [GS2/3] All scenes during shutdown:', allScenes);
+        } catch (error) {
+            console.warn('🧹 [GS2x/3] Error checking scene state:', error.message);
+        }
 
         // Skip all cleanup to prevent destroy errors during scene transitions
-        // This is a temporary fix for the restart issue
-        console.log('✅ GameScene shutdown complete (no cleanup)');
+        console.log('🧹 [GS3/3] GameScene shutdown complete (no cleanup)');
     }
 }
 
