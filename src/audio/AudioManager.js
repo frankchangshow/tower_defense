@@ -5,7 +5,8 @@
 class AudioManager {
     constructor(scene) {
         this.scene = scene;
-        this.isEnabled = true;
+        // Check registry for audio state, default to true if not set
+        this.isEnabled = this.scene.game.registry.get('audioEnabled', true);
         this.masterVolume = 0.7;
         this.musicVolume = 0.5;
         this.sfxVolume = 0.8;
@@ -16,7 +17,7 @@ class AudioManager {
         this.sounds = {};
         this.isInitialized = false;
         
-        console.log('🔊 AudioManager initialized');
+        console.log('🔊 AudioManager initialized - Audio enabled:', this.isEnabled);
     }
 
     /**
@@ -405,6 +406,9 @@ class AudioManager {
     toggleAudio() {
         this.isEnabled = !this.isEnabled;
         
+        // Update registry so other scenes can access the state
+        this.scene.game.registry.set('audioEnabled', this.isEnabled);
+        
         if (this.isEnabled) {
             this.playBackgroundMusic();
             console.log('🔊 Audio enabled');
@@ -413,6 +417,13 @@ class AudioManager {
             console.log('🔊 Audio disabled');
         }
         
+        return this.isEnabled;
+    }
+
+    /**
+     * Get current audio enabled state
+     */
+    isAudioEnabled() {
         return this.isEnabled;
     }
 

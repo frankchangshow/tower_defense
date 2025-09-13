@@ -115,6 +115,19 @@ class UIScene extends Phaser.Scene {
             this.scene.get('GameScene').events.emit('skipWave');
         });
 
+        // Audio toggle button
+        this.audioButton = this.add.rectangle(920, buttonY, 60, 30, 0x2196F3);
+        this.audioText = this.add.text(920, buttonY, 'Audio', { font: '11px Arial', fill: '#ffffff' });
+        this.audioText.setOrigin(0.5);
+        this.audioButton.setInteractive();
+
+        // Set initial audio state
+        this.updateAudioButton();
+
+        this.audioButton.on('pointerdown', () => {
+            this.toggleAudio();
+        });
+
         // Keyboard controls for control buttons
         this.input.keyboard.on('keydown-P', () => {
             this.scene.get('GameScene').events.emit('togglePause');
@@ -481,6 +494,7 @@ class UIScene extends Phaser.Scene {
             if (this.skipButton) this.skipButton.off('pointerdown');
             if (this.upgradeButton) this.upgradeButton.off('pointerdown');
             if (this.sellButton) this.sellButton.off('pointerdown');
+            if (this.audioButton) this.audioButton.off('pointerdown');
 
             // Clean up tower shop button listeners
             if (this.towerButtons) {
@@ -498,6 +512,21 @@ class UIScene extends Phaser.Scene {
         } catch (error) {
             console.error('❌ Error during UIScene shutdown:', error);
             console.error('Stack trace:', error.stack);
+        }
+    }
+
+    updateAudioButton() {
+        const audioEnabled = this.game.registry.get('audioEnabled', true);
+        this.audioText.setText(audioEnabled ? 'Audio' : 'Mute');
+        this.audioButton.setFillStyle(audioEnabled ? 0x2196F3 : 0x757575);
+    }
+
+    toggleAudio() {
+        const gameScene = this.scene.get('GameScene');
+        if (gameScene && gameScene.audioManager) {
+            const newState = gameScene.audioManager.toggleAudio();
+            this.updateAudioButton();
+            console.log('🔊 Audio toggled to:', newState);
         }
     }
 }

@@ -1,10 +1,10 @@
 // Global version configuration
-export const VERSION = '20241213iii';
+export const VERSION = '20241213jjj';
 
 // Version info
 export const VERSION_INFO = {
     number: VERSION,
-    description: 'Remove Menu Button - Page Reload Only',
+    description: 'Fix Audio Toggle - Menu & Game',
     build: 'debug'
 };
 

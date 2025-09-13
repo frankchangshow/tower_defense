@@ -6,6 +6,11 @@ class MenuScene extends Phaser.Scene {
     }
 
     create() {
+        // Initialize audio registry if not set
+        if (this.game.registry.get('audioEnabled') === undefined) {
+            this.game.registry.set('audioEnabled', true);
+        }
+
         // Background
         this.add.rectangle(480, 270, 960, 540, 0x2c3e50);
 
@@ -97,12 +102,18 @@ class MenuScene extends Phaser.Scene {
         });
         audioText.setOrigin(0.5);
 
+        // Set initial state based on registry
+        const initialAudioState = this.game.registry.get('audioEnabled');
+        audioText.setText(initialAudioState ? 'Audio: ON' : 'Audio: OFF');
+        audioButton.setFillStyle(initialAudioState ? 0x2196F3 : 0x757575);
+
         audioButton.setInteractive();
         audioButton.on('pointerdown', () => {
             const currentAudioState = this.game.registry.get('audioEnabled');
             this.game.registry.set('audioEnabled', !currentAudioState);
             audioText.setText(currentAudioState ? 'Audio: OFF' : 'Audio: ON');
             audioButton.setFillStyle(currentAudioState ? 0x757575 : 0x2196F3);
+            console.log('🔊 Audio toggled to:', !currentAudioState);
         });
 
         // Version info
